@@ -1,0 +1,44 @@
+"Pickup Points","Afhaalpunten"
+"API Configuration","API Configuratie"
+"Enable API connection","API Verbinding Inschakelen"
+"Mode","Modus"
+"Test","Test"
+"Production","Productie"
+"Select test or production mode","Selecteer test of productie modus"
+"Organization ID (Optional)","Organisatie ID (Optioneel)"
+"Your Innosend Organization ID - only required if your API endpoints require organization-specific paths (e.g., organizations/{id}/endpoint). Leave empty if not needed.","Uw Innosend Organisatie ID - alleen vereist als uw API endpoints organisatie-specifieke paden vereisen (bijv. organizations/{id}/endpoint). Laat leeg indien niet nodig."
+"API Key (Username)","API Key (Gebruikersnaam)"
+"Your Innosend API key / username (found in your account settings after activating the API)","Uw Innosend API key / gebruikersnaam (te vinden in uw accountinstellingen na activering van de API)"
+"API Secret (Password)","API Secret (Wachtwoord)"
+"Your Innosend API secret / password (found in your account settings after activating the API)","Uw Innosend API secret / wachtwoord (te vinden in uw accountinstellingen na activering van de API)"
+"API Token","API Token"
+"Your Innosend API token (found in your account settings after activating the API)","Uw Innosend API token (te vinden in uw accountinstellingen na activering van de API)"
+"Test Endpoint URL","Test Endpoint URL"
+"Base API endpoint URL for test environment (default: https://api.innosend.eu)","Basis API endpoint URL voor testomgeving (standaard: https://api.innosend.eu)"
+"Production Endpoint URL","Productie Endpoint URL"
+"Base API endpoint URL for production environment (default: https://api.innosend.eu)","Basis API endpoint URL voor productieomgeving (standaard: https://api.innosend.eu)"
+"Request Timeout (seconds)","Request Timeout (seconden)"
+"Timeout for API requests in seconds","Timeout voor API requests in seconden"
+"Test Connection","Test Verbinding"
+"Test API Connection","Test API Verbinding"
+"Click to test the connection to the Innosend API with the current configuration","Klik om de verbinding met de Innosend API te testen met de huidige configuratie"
+"API Settings","API Instellingen"
+"Enable or disable the Innosend API connection","Inschakelen of uitschakelen van de Innosend API verbinding"
+"Click to test the connection to the Innosend API using your API Token, if you can return Carriers for Pickup Points","Klik om de verbinding met de Innosend API te testen met uw API Token, om te controleren of u Carriers kunt  voor Afhaalpunten"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

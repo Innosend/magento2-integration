@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @package     Innosend_Integration
+ * @author      Henk Valk (henk@falconmedia.nl)
+ * @version     1.0.0
+ * @date        2025-11-28
+ *
+ * Copyright (c) 2025 Falcon Media (www.falconmedia.nl)
+ */
+-->
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+    <route url="/V1/innosend/ping" method="GET">
+        <service class="Innosend\Integration\Controller\Api\Ping" method="execute"/>
+        <resources>
+            <resource ref="anonymous"/>
+        </resources>
+    </route>
+</routes>
+
+

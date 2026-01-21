@@ -1,0 +1,133 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @package     Innosend_Integration
+ * @author      Henk Valk (henk@falconmedia.nl)
+ * @version     1.0.0
+ * @date        2025-11-28
+ *
+ * Copyright (c) 2025 Falcon Media (www.falconmedia.nl)
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="innosend" translate="label" sortOrder="200" class="innosend-tab">
+            <label>Innosend</label>
+        </tab>
+        <section id="innosend_api" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>API Configuration</label>
+            <tab>innosend</tab>
+            <resource>Innosend_Integration::config</resource>
+            <class>innosend-api-section</class>
+            <group id="configuration" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>API Settings</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable API connection</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Enable or disable the Innosend API connection</comment>
+                </field>
+                <field id="mode" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Mode</label>
+                    <source_model>Innosend\Integration\Model\Config\Source\Mode</source_model>
+                    <comment>Select test or production mode</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="allow_mutations" translate="label comment" type="select" sortOrder="22" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Allow write operations (POST/PUT/DELETE)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Safety switch: keep this disabled while testing to prevent accidental live updates.</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="live_endpoint" translate="label comment" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Production Endpoint URL</label>
+                    <comment>Base API endpoint URL for production environment (default: https://api.innosend.eu)</comment>
+                    <validate>validate-url</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="test_endpoint" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Test Endpoint URL</label>
+                    <comment>Base API endpoint URL for test environment (default: https://api-staging.innosend.eu)</comment>
+                    <validate>validate-url</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="api_key" translate="label comment" type="obscure" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>API Key (Username)</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <frontend_model>Innosend\Integration\Block\Adminhtml\System\Config\ApiKeyComment</frontend_model>
+                    <comment><![CDATA[Your Innosend API key / username. <a href="https://dashboard.innosend.eu/settings/services/shop" target="_blank">Create your API credentials here</a> (opens in new window)]]></comment>
+                    <validate>required-entry</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="api_secret" translate="label comment" type="obscure" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>API Secret (Password)</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <frontend_model>Innosend\Integration\Block\Adminhtml\System\Config\ApiSecretComment</frontend_model>
+                    <comment><![CDATA[Your Innosend API secret / password. <a href="https://dashboard.innosend.eu/settings/services/shop" target="_blank">Create your API credentials here</a> (opens in new window)]]></comment>
+                    <validate>required-entry</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="test_connection" translate="label" type="button" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Test Connection</label>
+                    <button_label>Test API Connection</button_label>
+                    <frontend_model>Innosend\Integration\Block\Adminhtml\System\Config\TestConnection</frontend_model>
+                    <comment>Click to test the connection to the Innosend API with the current configuration</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="organization_id" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Organization ID (Optional)</label>
+                    <comment>Your Innosend Organization ID - only required if your API endpoints require organization-specific paths (e.g., organizations/{id}/endpoint). Leave empty if not needed.</comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="timeout" translate="label comment" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Request Timeout (seconds)</label>
+                    <comment>Timeout for API requests in seconds</comment>
+                    <validate>validate-number validate-greater-than-zero</validate>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+
+                <field id="enable_pickup_points" translate="label comment" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Pickup Points</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Enable or disable Pickup Points</comment>
+                </field>
+                <group id="pickup_points" translate="label" type="text" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Pickup Points</label>
+                    <field id="api_token" translate="label comment" type="obscure" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>API Token</label>
+                        <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                        <frontend_model>Innosend\Integration\Block\Adminhtml\System\Config\ApiTokenComment</frontend_model>
+                        <comment><![CDATA[Your Innosend API Token for Pickup Points. <a href="https://dashboard.innosend.eu/settings/api-keys" target="_blank">Create API Token here</a> (opens in new window)]]></comment>
+                    </field>
+                    <field id="test_token_connection" translate="label" type="button" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Test API Token Connection</label>
+                        <button_label>Test API Token Connection</button_label>
+                        <frontend_model>Innosend\Integration\Block\Adminhtml\System\Config\TestTokenConnection</frontend_model>
+                        <comment>Click to test the connection to the Innosend API using your API Token, if you can return Carriers for Pickup Points</comment>
+                    </field>
+                    <depends>
+                        <field id="enable_pickup_points">1</field>
+                    </depends>
+                </group>
+            </group>
+        </section>
+    </system>
+</config>

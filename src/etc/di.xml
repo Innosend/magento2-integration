@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @package     Innosend_Integration
+ * @author      Henk Valk (henk@falconmedia.nl)
+ * @version     1.0.0
+ * @date        2025-11-28
+ *
+ * Copyright (c) 2025 Falcon Media (www.falconmedia.nl)
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Innosend\Integration\Api\ClientInterface" type="Innosend\Integration\Model\Api\Client"/>
+    <preference for="Innosend\Integration\Api\CarrierInterface" type="Innosend\Integration\Model\Api\Carrier"/>
+
+    <!-- Plugin to gracefully handle missing media assets during content extraction -->
+    <type name="Magento\MediaContent\Model\ExtractAssetsFromContent">
+        <plugin name="innosend_base_extract_assets_from_content"
+                type="Innosend\Integration\Plugin\MediaContent\ExtractAssetsFromContentPlugin"
+                sortOrder="10"/>
+    </type>
+
+    <!-- Plugin to gracefully handle missing media assets in GetByPath -->
+    <type name="Magento\MediaGallery\Model\Asset\Command\GetByPath">
+        <plugin name="innosend_base_get_by_path"
+                type="Innosend\Integration\Plugin\MediaGallery\GetByPathPlugin"
+                sortOrder="10"/>
+    </type>
+
+    <!-- Plugin to gracefully handle missing media assets in CMS block observer -->
+    <type name="Magento\MediaContentCms\Observer\Block">
+        <plugin name="innosend_base_cms_block_observer"
+                type="Innosend\Integration\Plugin\MediaContentCms\BlockObserverPlugin"
+                sortOrder="10"/>
+    </type>
+
+    <!-- Plugin to fix Calendar array offset on null error -->
+    <type name="Magento\Framework\View\Element\Html\Calendar">
+        <plugin name="innosend_base_calendar_fix"
+                type="Innosend\Integration\Plugin\View\Element\Html\CalendarPlugin"
+                sortOrder="10"/>
+    </type>
+</config>
+
+

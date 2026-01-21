@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp:etc/csp_whitelist.xsd"
+>
+    <policies>
+        <policy id="object-src">
+            <values>
+                <value id="hash1" type="hash" algorithm="sha256">YX4gEJEta2e2CQX/ITVocjAQzpmvsMimkZImvDoZLhs=</value>
+            </values>
+        </policy>
+        <policy id="script-src">
+            <values>
+                <value id="api.innosend.eu" type="host">api.innosend.eu</value>
+                <value id="api-test.innosend.eu" type="host">api-test.innosend.eu</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="api.innosend.eu" type="host">api.innosend.eu</value>
+                <value id="api-test.innosend.eu" type="host">api-test.innosend.eu</value>
+                <value id="static.innosend.eu" type="host">static.innosend.eu</value>
+            </values>
+        </policy>
+        <policy id="style-src">
+            <values>
+                <value id="api.innosend.eu" type="host">api.innosend.eu</value>
+                <value id="api-test.innosend.eu" type="host">api-test.innosend.eu</value>
+            </values>
+        </policy>
+        <policy id="font-src">
+            <values>
+                <value id="api.innosend.eu" type="host">api.innosend.eu</value>
+                <value id="api-test.innosend.eu" type="host">api-test.innosend.eu</value>
+            </values>
+        </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="api.innosend.eu" type="host">api.innosend.eu</value>
+                <value id="api-test.innosend.eu" type="host">api-test.innosend.eu</value>
+            </values>
+        </policy>
+    </policies>
+</csp_whitelist>

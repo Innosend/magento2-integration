@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @package     Innosend_Integration
+ * @author      Henk Valk (henk@falconmedia.nl)
+ * @version     1.0.0
+ * @date        2025-11-28
+ *
+ * Copyright (c) 2025 Falcon Media (www.falconmedia.nl)
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <innosend_api>
+            <configuration>
+                <enabled>0</enabled>
+                <mode>test</mode>
+                <allow_mutations>0</allow_mutations>
+                <organization_id></organization_id>
+                <api_key></api_key>
+                <api_secret></api_secret>
+                <test_endpoint>https://api-staging.innosend.eu</test_endpoint>
+                <live_endpoint>https://api.innosend.eu</live_endpoint>
+                <timeout>30</timeout>
+                <enable_pickup_points>0</enable_pickup_points>
+                <pickup_points>
+                    <api_token></api_token>
+                </pickup_points>
+            </configuration>
+        </innosend_api>
+    </default>
+</config>

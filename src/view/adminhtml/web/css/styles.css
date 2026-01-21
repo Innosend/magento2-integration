@@ -1,0 +1,84 @@
+/**
+ * @package Innosend_PickupPoints
+ * @author Falcon Media
+*/
+
+.comment-innosend {
+    padding: 5px 10px;
+}
+.innosend-tab .admin__page-nav-title.title {
+    position: relative;
+}
+.innosend-tab .admin__page-nav-title.title:before {
+    content: '';
+    background: url(../images/innosend.svg) no-repeat 2px 3px transparent;
+    background-size: 147px;
+    width: 150px;
+    height: 23px;
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    display: block;
+    margin-right: 10px;
+}
+.innosend-tab .admin__page-nav-title.title strong {
+    text-indent: -99999px;
+    display: block;
+}
+.fm-heading-innosend {
+    color: #c62b46;
+    text-align: left;
+    margin: 20px 0 0;
+    padding: 5px 5px 5px 10px;
+    background: #F1F1F1;
+    font-weight: bold;
+    border-left: 5px solid #c62b46;
+}
+#innosend_api_configuration-head:after,
+#innosend_api_configuration_pickup_points-head:after,
+#innosend_pickup_points-head:after,
+#carriers_innosend_pickup_points-head:after {
+    content: '';
+    background: url(../images/innosend.svg) no-repeat 2px 3px #FFFFFF;
+    background-size: 147px;
+    width: 150px;
+    height: 23px;
+    display: block;
+    float: left;
+    margin-right: 10px;
+}
+
+.fm-innosend-pickup-point {
+    background: #F6FBF6;
+    border-top: 1px solid #e3e3e3;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 4px;
+}
+.fm-innosend-pickup-point__header {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.fm-innosend-pickup-point__content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+.fm-innosend-pickup-point__content--pp {
+    display: flex;
+    flex-direction: column;
+}
+.fm-innosend-pickup-point__content--name {
+    font-weight: bold;
+    font-size: 1em;
+    margin-bottom: 5px;
+}
+img.fm-innosend-pickup-point__content--logo {
+    width: 50px;
+    height: auto;
+}

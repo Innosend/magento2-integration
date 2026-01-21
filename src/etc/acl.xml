@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * @package     Innosend_Integration
+ * @author      Henk Valk (henk@falconmedia.nl)
+ * @version     1.0.0
+ * @date        2025-11-28
+ *
+ * Copyright (c) 2025 Falcon Media (www.falconmedia.nl)
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="Innosend_Integration::config" title="Innosend Configuration" sortOrder="50"/>
+                        </resource>
+                    </resource>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>
+
