@@ -2,8 +2,7 @@
 /**
  * @package     Innosend_Integration
  * @author      Henk Valk (henk@falconmedia.nl)
- * @version     1.0.0
- * @date        2025-11-28
+ * @version     1.1.0
  *
  * Copyright (c) 2025 Falcon Media (www.falconmedia.nl)
  */
@@ -24,16 +23,13 @@ class Config
     /**
      * Configuration paths
      */
-    public const XML_PATH_ENABLED = 'innosend_api/configuration/enabled';
-    public const XML_PATH_MODE = 'innosend_api/configuration/mode';
-    public const XML_PATH_ALLOW_MUTATIONS = 'innosend_api/configuration/allow_mutations';
+    public const XML_PATH_ENABLED     = 'innosend_api/configuration/enabled';
+    public const XML_PATH_MODE        = 'innosend_api/configuration/mode';
     public const XML_PATH_ORGANIZATION_ID = 'innosend_api/configuration/organization_id';
-    public const XML_PATH_API_KEY = 'innosend_api/configuration/api_key';
-    public const XML_PATH_API_SECRET = 'innosend_api/configuration/api_secret';
-    public const XML_PATH_TEST_ENDPOINT = 'innosend_api/configuration/test_endpoint';
-    public const XML_PATH_LIVE_ENDPOINT = 'innosend_api/configuration/live_endpoint';
-    public const XML_PATH_TIMEOUT = 'innosend_api/configuration/timeout';
-    public const XML_PATH_PICKUP_POINTS_API_TOKEN = 'innosend_api/configuration/pickup_points/api_token';
+    public const XML_PATH_API_TOKEN   = 'innosend_api/configuration/api_token';
+    public const XML_PATH_TEST_ENDPOINT  = 'innosend_api/configuration/test_endpoint';
+    public const XML_PATH_LIVE_ENDPOINT  = 'innosend_api/configuration/live_endpoint';
+    public const XML_PATH_TIMEOUT     = 'innosend_api/configuration/timeout';
 
     /**
      * @var ScopeConfigInterface
@@ -88,22 +84,6 @@ class Config
     }
 
     /**
-     * Whether write operations (POST/PUT/DELETE) to the Innosend API are allowed.
-     * This is a safety switch to prevent accidental live mutations while testing.
-     *
-     * @param int|null $storeId
-     * @return bool
-     */
-    public function isMutationAllowed(?int $storeId = null): bool
-    {
-        return (bool) $this->scopeConfig->getValue(
-            self::XML_PATH_ALLOW_MUTATIONS,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-    }
-
-    /**
      * Get Organization ID
      *
      * @param int|null $storeId
@@ -119,37 +99,30 @@ class Config
     }
 
     /**
-     * Get API key
+     * Get API Token for Bearer authentication
+     * Used for all Innosend API endpoints (including /v1/pickup-point).
      *
      * @param int|null $storeId
      * @return string
      */
-    public function getApiKey(?int $storeId = null): string
+    public function getApiToken(?int $storeId = null): string
     {
-        $encryptedKey = (string) $this->scopeConfig->getValue(
-            self::XML_PATH_API_KEY,
+        $encryptedToken = (string) $this->scopeConfig->getValue(
+            self::XML_PATH_API_TOKEN,
             ScopeInterface::SCOPE_STORE,
             $storeId
         );
 
-        return $this->encryptor->decrypt($encryptedKey);
-    }
+        if (empty($encryptedToken)) {
+            return '';
+        }
 
-    /**
-     * Get API secret
-     *
-     * @param int|null $storeId
-     * @return string
-     */
-    public function getApiSecret(?int $storeId = null): string
-    {
-        $encryptedSecret = (string) $this->scopeConfig->getValue(
-            self::XML_PATH_API_SECRET,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-
-        return $this->encryptor->decrypt($encryptedSecret);
+        try {
+            $decrypted = $this->encryptor->decrypt($encryptedToken);
+            return trim($decrypted);
+        } catch (\Exception $e) {
+            return trim($encryptedToken);
+        }
     }
 
     /**
@@ -212,36 +185,8 @@ class Config
     }
 
     /**
-     * Get Pickup Points API Token
-     *
-     * @param int|null $storeId
-     * @return string
-     */
-    public function getPickupPointsApiToken(?int $storeId = null): string
-    {
-        $encryptedToken = (string) $this->scopeConfig->getValue(
-            self::XML_PATH_PICKUP_POINTS_API_TOKEN,
-            ScopeInterface::SCOPE_STORE,
-            $storeId
-        );
-
-        if (empty($encryptedToken)) {
-            return '';
-        }
-
-        try {
-            $decrypted = $this->encryptor->decrypt($encryptedToken);
-            if (!empty($decrypted) && $decrypted !== $encryptedToken) {
-                return trim($decrypted);
-            }
-            return trim($decrypted);
-        } catch (\Exception $e) {
-            return trim($encryptedToken);
-        }
-    }
-
-    /**
-     * Check if configuration is valid
+     * Check if the API is properly configured (enabled + API Token present).
+     * All endpoints use Bearer token authentication.
      *
      * @param int|null $storeId
      * @return bool
@@ -249,8 +194,7 @@ class Config
     public function isValid(?int $storeId = null): bool
     {
         return $this->isEnabled($storeId)
-            && !empty($this->getApiKey($storeId))
-            && !empty($this->getApiSecret($storeId))
+            && !empty($this->getApiToken($storeId))
             && !empty($this->getEndpointUrl($storeId));
     }
 }

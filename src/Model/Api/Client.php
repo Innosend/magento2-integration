@@ -2,8 +2,7 @@
 /**
  * @package     Innosend_Integration
  * @author      Henk Valk (henk@falconmedia.nl)
- * @version     1.0.0
- * @date        2025-11-28
+ * @version     1.1.0
  *
  * Copyright (c) 2025 Falcon Media (www.falconmedia.nl)
  */
@@ -21,6 +20,7 @@ use Psr\Log\LoggerInterface;
 
 /**
  * API client implementation for Innosend
+ * All requests use Bearer token authentication (Authorization: Bearer {API_TOKEN}).
  */
 class Client implements ClientInterface
 {
@@ -129,7 +129,7 @@ class Client implements ClientInterface
     }
 
     /**
-     * Check if API is enabled and configured
+     * Check if the API is enabled and configured (Bearer token present)
      *
      * @return bool
      */
@@ -139,7 +139,7 @@ class Client implements ClientInterface
     }
 
     /**
-     * Make HTTP request
+     * Make HTTP request using Bearer token authentication
      *
      * @param string $method HTTP method
      * @param string $endpoint API endpoint
@@ -150,77 +150,41 @@ class Client implements ClientInterface
      */
     private function request(string $method, string $endpoint, array $params = [], array $data = []): array
     {
-        if (!$this->isEnabled()) {
-            throw new LocalizedException(__('Innosend API is not enabled or not properly configured.'));
-        }
-
-        // Safety switch: block any write operations unless explicitly allowed in config.
-        // This lets you test connectivity (GET) without risking accidental live mutations.
-        if ($method !== 'GET' && !$this->config->isMutationAllowed()) {
-            $this->logger->warning('Innosend API write operation blocked by configuration', [
-                'method' => $method,
-                'endpoint' => $endpoint,
-            ]);
+        if (!$this->config->isValid()) {
             throw new LocalizedException(
-                __('Innosend API write operations are disabled (enable "Allow write operations" to proceed).')
+                __('Innosend API is not enabled or not properly configured. '
+                    . 'Please set the API Token under Innosend > API Configuration.')
             );
         }
 
         $baseUrl = $this->config->getEndpointUrl();
         $organizationPath = $this->config->getOrganizationPath();
-        
-        // Build the full endpoint path
+
         $endpointPath = ltrim($endpoint, '/');
-        
-        // Check if this is a pickup points endpoint (should NOT use organization path)
         $isPickupPointEndpoint = strpos($endpointPath, 'pickup-point') !== false;
-        
-        // Ensure we use /v1 prefix (WordPress plugin format)
-        // Pickup points endpoints do NOT use organization path (they're global)
-        if ($isPickupPointEndpoint) {
-            // If endpoint already starts with v1/, use it as-is
-            if (strpos($endpointPath, 'v1/') === 0) {
-                // Already has v1 prefix, use as-is
-            } elseif (strpos($endpointPath, '/v1/') !== false) {
-                // Has v1 somewhere in the path, use as-is
-            } else {
-                // Add v1 prefix for pickup points
-                $endpointPath = 'v1/' . $endpointPath;
-            }
-        } else {
-            // Non-pickup endpoints also live under /v1 (e.g. /v1/orders)
-            if (strpos($endpointPath, 'v1/') === 0) {
-                // Already has v1 prefix, use as-is
-            } elseif (strpos($endpointPath, '/v1/') !== false) {
-                // Has v1 somewhere in the path, use as-is
-            } else {
-                $endpointPath = 'v1/' . $endpointPath;
-            }
+
+        // Ensure /v1/ prefix
+        if (strpos($endpointPath, 'v1/') !== 0) {
+            $endpointPath = 'v1/' . $endpointPath;
         }
-        
-        // Only add organization path for non-pickup-point endpoints
-        // Pickup points are global and don't require organization ID
+
+        // Organization path applies only to non-pickup-point endpoints
         if (!empty($organizationPath) && !$isPickupPointEndpoint) {
-            // If endpoint is versioned (v1/...), the organization prefix should come after v1/
-            if (strpos($endpointPath, 'v1/') === 0) {
-                if (strpos($endpointPath, 'v1/organizations/') !== 0) {
-                    $endpointPath = 'v1/' . $organizationPath . '/' . substr($endpointPath, 3);
-                }
+            if (strpos($endpointPath, 'v1/') === 0
+                && strpos($endpointPath, 'v1/organizations/') !== 0
+            ) {
+                $endpointPath = 'v1/' . $organizationPath . '/' . substr($endpointPath, 3);
             } elseif (strpos($endpointPath, 'organizations/') !== 0) {
-                // Fallback for non-versioned endpoints
                 $endpointPath = $organizationPath . '/' . $endpointPath;
             }
         }
-        
+
         $url = rtrim($baseUrl, '/') . '/' . $endpointPath;
 
         if (!empty($params)) {
-            // WordPress plugin formats array parameters as key=value1&key=value2 (not key[]=value1)
-            // Build query string manually to match WordPress plugin format
             $queryParts = [];
             foreach ($params as $key => $value) {
                 if (is_array($value)) {
-                    // For arrays, add each item separately: couriers=value1&couriers=value2
                     foreach ($value as $item) {
                         $queryParts[] = urlencode($key) . '=' . urlencode((string) $item);
                     }
@@ -231,34 +195,12 @@ class Client implements ClientInterface
             $url .= '?' . implode('&', $queryParts);
         }
 
-        // Store the full URL for debugging
         $this->lastRequestUrl = $url;
 
         try {
             $this->curl->setTimeout($this->config->getTimeout());
             $this->curl->addHeader('Content-Type', 'application/json');
-            
-            // Use Bearer token authentication (like WordPress plugin)
-            // For pickup points endpoints, use the pickup points specific token
-            $apiToken = null;
-            if (strpos($endpointPath, 'pickup-point') !== false) {
-                // This is a pickup points endpoint, use pickup points API token
-                $apiToken = $this->config->getPickupPointsApiToken();
-                $this->logger->debug('Using pickup points API token for endpoint', ['endpoint' => $endpointPath]);
-            }
-            
-            // Use Bearer token if available (pickup points), otherwise use Basic Auth
-            if (!empty($apiToken)) {
-                $this->curl->addHeader('Authorization', 'Bearer ' . $apiToken);
-            } else {
-                // Use Basic Auth for all other endpoints (orders, etc.)
-                $apiKey = $this->config->getApiKey();
-                $apiSecret = $this->config->getApiSecret();
-                if (!empty($apiKey) && !empty($apiSecret)) {
-                    $this->curl->setOption(CURLOPT_USERPWD, $apiKey . ':' . $apiSecret);
-                    $this->logger->debug('Using Basic Auth (API key/secret) for endpoint', ['endpoint' => $endpointPath]);
-                }
-            }
+            $this->curl->addHeader('Authorization', 'Bearer ' . $this->config->getApiToken());
 
             if (!empty($data)) {
                 $this->curl->addHeader('Content-Length', (string) strlen($this->json->serialize($data)));
@@ -285,26 +227,19 @@ class Client implements ClientInterface
             $statusCode = $this->curl->getStatus();
 
             if ($statusCode >= 400) {
-                $this->logger->error(
-                    'Innosend API Error',
-                    [
-                        'method' => $method,
-                        'url' => $url,
-                        'status' => $statusCode,
-                        'response' => $responseBody,
-                    ]
-                );
-
-                throw new LocalizedException(
-                    __('Innosend API error: %1', $responseBody)
-                );
+                $this->logger->error('Innosend API Error', [
+                    'method'   => $method,
+                    'url'      => $url,
+                    'status'   => $statusCode,
+                    'response' => $responseBody,
+                ]);
+                throw new LocalizedException(__('Innosend API error: %1', $responseBody));
             }
 
-            // Handle empty response
             if (empty($responseBody)) {
                 $this->logger->warning('Empty response from API', [
                     'method' => $method,
-                    'url' => $url,
+                    'url'    => $url,
                     'status' => $statusCode,
                 ]);
                 return [];
@@ -315,28 +250,25 @@ class Client implements ClientInterface
                 return is_array($decoded) ? $decoded : [];
             } catch (\Exception $e) {
                 $this->logger->error('Failed to decode JSON response', [
-                    'method' => $method,
-                    'url' => $url,
+                    'method'   => $method,
+                    'url'      => $url,
                     'response' => substr($responseBody, 0, 500),
-                    'error' => $e->getMessage(),
+                    'error'    => $e->getMessage(),
                 ]);
                 throw new LocalizedException(
                     __('Invalid JSON response from Innosend API: %1', $e->getMessage())
                 );
             }
-        } catch (\Exception $e) {
-            $this->logger->error(
-                'Innosend API Exception',
-                [
-                    'method' => $method,
-                    'url' => $url,
-                    'error' => $e->getMessage(),
-                ]
-            );
-
+        } catch (\Throwable $e) {
             if ($e instanceof LocalizedException) {
                 throw $e;
             }
+
+            $this->logger->error('Innosend API Exception', [
+                'method' => $method,
+                'url'    => $url,
+                'error'  => $e->getMessage(),
+            ]);
 
             throw new LocalizedException(
                 __('Error communicating with Innosend API: %1', $e->getMessage())

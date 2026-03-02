@@ -2,8 +2,7 @@
 /**
  * @package     Innosend_Integration
  * @author      Henk Valk (henk@falconmedia.nl)
- * @version     1.0.0
- * @date        2025-11-28
+ * @version     1.1.0
  *
  * Copyright (c) 2025 Falcon Media (www.falconmedia.nl)
  */
@@ -59,11 +58,9 @@ interface ClientInterface
     public function delete(string $endpoint): array;
 
     /**
-     * Check if API is enabled and configured
+     * Check if the API is enabled and configured (Bearer token present)
      *
      * @return bool
      */
     public function isEnabled(): bool;
 }
-
-

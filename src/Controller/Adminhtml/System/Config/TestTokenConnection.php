@@ -111,12 +111,10 @@ class TestTokenConnection extends Action implements HttpPostActionInterface
                 throw new LocalizedException(__('API must be enabled to test connection.'));
             }
 
-            // Handle encrypted API token
             $apiToken = $params['api_token'] ?? '';
-            
-            // If value is obscured (******) or empty, get from config
+
             if (empty($apiToken) || preg_match('/^\*+$/', $apiToken)) {
-                $apiToken = $this->innosendConfig->getPickupPointsApiToken($storeId);
+                $apiToken = $this->innosendConfig->getApiToken($storeId);
             } else {
                 // New value provided, try to decrypt if encrypted
                 try {

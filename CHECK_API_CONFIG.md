@@ -6,7 +6,7 @@ Your API configuration has been verified:
 
 - **Module Status**: ✅ Enabled
 - **API Enabled**: ✅ Yes
-- **API Key**: ✅ Configured (encrypted)
+- **API TOKEN**: ✅ Configured (encrypted)
 - **Mode**: Test
 - **Endpoint**: Configured
 
@@ -57,14 +57,14 @@ php bin/magento config:show innosend_api/configuration/test_endpoint
 ## Current Configuration
 
 Based on the check:
-- **API Key**: ✅ Set (encrypted)
+- **API TOKEN**: ✅ Set (encrypted)
 - **Mode**: Test
-- **Endpoint**: `https://api.innosend.com`
+- **Endpoint**: `https://api.innosend.eu`
 
 ## Next Steps
 
 1. **Test the connection** using the ping endpoint above
-2. **Verify the endpoint URL** - Make sure `https://api.innosend.com` or `https://api.innosend.eu` is correct according to Innosend documentation
+2. **Verify the endpoint URL** - Make sure `https://api.innosend.eu` is correct according to Innosend documentation
 3. **Switch to Production mode** when ready to go live
 4. **Check logs** if there are any issues: `var/log/system.log` and `var/log/exception.log`
 
@@ -74,7 +74,7 @@ If the ping endpoint returns an error:
 
 1. **Clear Magento cache**: `php bin/magento cache:flush`
 2. **Check if module is enabled**: `php bin/magento module:status Innosend_Integration`
-3. **Verify API key** is correct in admin configuration
+3. **Verify API TOKEN** is correct in admin configuration
 4. **Check Magento logs** for detailed error messages
 5. **Verify endpoint URL** is accessible from your server
 

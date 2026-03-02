@@ -16,7 +16,7 @@ php bin/magento cache:flush
 1. Navigate to **Stores > Configuration > Innosend > API Configuration**
 2. Enable the module
 3. Select Test or Live mode
-4. Enter your API Key + Secret
+4. Enter your API TOKEN
 5. (Optional) configure endpoint URLs and timeout
 
 ## Notes

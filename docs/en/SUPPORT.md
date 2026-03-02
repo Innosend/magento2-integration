@@ -1,56 +1,40 @@
-# Innosend Integration Module - Support
-
-## Support Options
-
-### Standard Support
-
-- Email: support@innosend.com
-- First Response time: 48 hours (business days)
-- Included with module license
-
-### Priority Support
-
-- Email: priority@innosend.com
-- First Response time: 8 hours (business days)
-- Available as add-on service
-
-## Support Scope
-
-### Included
-
-- Installation assistance
-- Configuration help
-- Bug fixes
-- API connectivity issues
-- Documentation questions
-
-### Not Included
-
-- Custom development
-- Third-party integrations
-- Theme modifications
-- Performance optimization
-- Server configuration
-
-## Reporting Issues
-
-When reporting issues, please include:
-
-1. Magento version
-2. PHP version
-3. Module version
-4. Error messages
-5. Steps to reproduce
-6. Relevant log files
-
-## Log Files
-
-Important log files:
-- `var/log/system.log`
-- `var/log/exception.log`
-- `var/log/debug.log` (if enabled)
+# Innosend Integration – Support
 
 ## Contact
 
-- Email: innosend@falconmedia.nl
-- Website: https://github.io/innosend/magento2-integration/
+| Channel | Address |
+|---|---|
+| Support email | support@innosend.eu |
+| Developer email | henk@falconmedia.nl |
+| Dashboard | https://dashboard.innosend.eu |
+
+## Before opening a ticket
+
+1. Run **Test API Token Connection** in the Magento admin.
+2. Check `var/log/system.log` and `var/log/exception.log` for recent errors.
+3. Confirm the module is enabled and the API Token is set.
+
+## Information to include
+
+| Item | Where to find it |
+|---|---|
+| Magento version | `php bin/magento --version` |
+| PHP version | `php -v` |
+| Module version | `composer show innosend/magento2-integration` |
+| Error message | `var/log/system.log` |
+| Steps to reproduce | — |
+
+## Common issues
+
+| Symptom | Likely cause |
+|---|---|
+| 401 Unauthorized | Invalid or expired API Token |
+| 404 Not Found | Wrong endpoint URL or mode (test vs. production) |
+| Empty pickup point list | API Token valid but no carriers configured for the address/country |
+| Config not saving | Cache not flushed; run `php bin/magento cache:flush` |
+
+## Log files
+
+- `var/log/system.log` – general API errors
+- `var/log/exception.log` – uncaught exceptions
+- `var/log/debug.log` – verbose output (when Magento debug logging is enabled)

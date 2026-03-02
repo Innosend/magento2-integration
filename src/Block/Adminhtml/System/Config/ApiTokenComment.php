@@ -17,7 +17,7 @@ use Magento\Framework\Data\Form\Element\AbstractElement;
 use Innosend\Integration\Model\Config as InnosendConfig;
 
 /**
- * Block to show masked API token in comment
+ * Block to show masked API token in the admin config comment
  */
 class ApiTokenComment extends Field
 {
@@ -53,7 +53,7 @@ class ApiTokenComment extends Field
         try {
             // Get the masked API token value
             $storeId = $this->getRequest() ? $this->getRequest()->getParam('store', null) : null;
-            $apiToken = $this->innosendConfig->getPickupPointsApiToken($storeId);
+            $apiToken = $this->innosendConfig->getApiToken($storeId);
             
             // Update the comment to show masked value
             if (!empty($apiToken)) {

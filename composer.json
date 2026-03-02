@@ -2,7 +2,7 @@
     "name": "innosend/magento2-integration",
     "description": "Innosend Integration Module for Magento 2 - Core API connector",
     "type": "magento2-module",
-    "version": "1.0.3",
+    "version": "1.1.0",
     "license": [
         "OSL-3.0",
         "AFL-3.0"

@@ -1,124 +1,153 @@
-# Innosend Integration Module - Technical Guide
+# Innosend Integration – Technical Guide
 
 ## Architecture
 
-The Innosend Integration module provides:
+The module provides:
 
-- API client interface and implementation
-- Configuration management
-- Healthcheck endpoint
-- Error handling and logging
+- `ClientInterface` – HTTP abstraction for all Innosend API endpoints
+- `Config` – reads and decrypts admin configuration values
+- `MigrateConfigPaths` – data patch that migrates v1.0.x config paths to v1.1.0
+- Healthcheck controller (`/innosend/api/ping`)
+- Admin block for "Test API Token Connection"
 
-## API Client
+## Authentication
 
-### ClientInterface
+All API requests use **Bearer token authentication**:
 
-The `Innosend\Integration\Api\ClientInterface` provides methods for API communication:
+```
+Authorization: Bearer {API_TOKEN}
+```
 
-- `get(string $endpoint, array $params = []): array`
-- `post(string $endpoint, array $data = []): array`
-- `put(string $endpoint, array $data = []): array`
-- `delete(string $endpoint): array`
-- `isEnabled(): bool`
+The token is configured at **Stores → Configuration → Innosend → API Configuration → API Token** and is stored encrypted in `core_config_data` under the path `innosend_api/configuration/api_token`.
 
-### Usage Example
+> **v1.0.x note**: The previous `api_key` + `api_secret` Basic Auth approach and the `allow_mutations` safety switch have been removed. The single `api_token` covers all endpoints.
+
+## Config model (`Innosend\Integration\Model\Config`)
+
+| Method | Returns | Description |
+|---|---|---|
+| `isEnabled()` | `bool` | Master enabled flag |
+| `getMode()` | `string` | `'test'` or `'live'` |
+| `getApiToken()` | `string` | Decrypted Bearer token |
+| `getEndpointUrl()` | `string` | Base URL for the active mode |
+| `getOrganizationPath()` | `string` | `organizations/{id}` or `''` |
+| `getTimeout()` | `int` | Request timeout in seconds |
+| `isValid()` | `bool` | `enabled && token present && endpoint present` |
+
+### Config path constants
+
+| Constant | XML path |
+|---|---|
+| `XML_PATH_ENABLED` | `innosend_api/configuration/enabled` |
+| `XML_PATH_MODE` | `innosend_api/configuration/mode` |
+| `XML_PATH_API_TOKEN` | `innosend_api/configuration/api_token` |
+| `XML_PATH_TEST_ENDPOINT` | `innosend_api/configuration/test_endpoint` |
+| `XML_PATH_LIVE_ENDPOINT` | `innosend_api/configuration/live_endpoint` |
+| `XML_PATH_ORGANIZATION_ID` | `innosend_api/configuration/organization_id` |
+| `XML_PATH_TIMEOUT` | `innosend_api/configuration/timeout` |
+
+## ClientInterface (`Innosend\Integration\Api\ClientInterface`)
+
+```php
+interface ClientInterface
+{
+    public function get(string $endpoint, array $params = []): array;
+    public function post(string $endpoint, array $data = []): array;
+    public function put(string $endpoint, array $data = []): array;
+    public function delete(string $endpoint): array;
+    public function isEnabled(): bool;
+}
+```
+
+The concrete implementation (`Model\Api\Client`) automatically:
+
+1. Prefixes endpoints with `/v1/`
+2. Injects the organization path for non-pickup-point endpoints
+3. Adds `Authorization: Bearer {token}` to every request
+4. Decodes the JSON response and returns a PHP array
+
+### URL construction
+
+For a request to `pickup-point/` with base URL `https://api.innosend.eu`:
+
+```
+GET https://api.innosend.eu/v1/pickup-point/
+Authorization: Bearer {token}
+```
+
+For a request to `orders` with organization ID `42`:
+
+```
+GET https://api.innosend.eu/v1/organizations/42/orders
+Authorization: Bearer {token}
+```
+
+> Organization path is **never** injected for `pickup-point` endpoints.
+
+## Usage example
 
 ```php
 use Innosend\Integration\Api\ClientInterface;
 
 class MyService
 {
-    private $apiClient;
+    public function __construct(private readonly ClientInterface $apiClient) {}
 
-    public function __construct(ClientInterface $apiClient)
-    {
-        $this->apiClient = $apiClient;
-    }
-
-    public function fetchData()
+    public function fetchPickupPoints(array $params): array
     {
         if (!$this->apiClient->isEnabled()) {
-            throw new \Exception('API not enabled');
+            throw new \RuntimeException('Innosend API not configured.');
         }
 
-        return $this->apiClient->get('endpoint', ['param' => 'value']);
+        return $this->apiClient->get('pickup-point/', $params);
     }
 }
 ```
 
-## Configuration
+## Dependency injection
 
-Configuration is managed via `Innosend\Integration\Model\Config`:
-
-```php
-use Innosend\Integration\Model\Config;
-
-class MyService
-{
-    private $config;
-
-    public function __construct(Config $config)
-    {
-        $this->config = $config;
-    }
-
-    public function checkConfig()
-    {
-        if (!$this->config->isValid()) {
-            // Configuration is invalid
-        }
-
-        $apiKey = $this->config->getApiKey();
-        $endpoint = $this->config->getEndpointUrl();
-    }
-}
-```
-
-## Error Handling
-
-All API errors are logged to:
-- `var/log/system.log` - General errors
-- `var/log/exception.log` - Exceptions
-
-Errors include:
-- Request details (method, URL, parameters)
-- Response status and body
-- Exception messages
-
-## Extension Points
-
-### Custom API Client
-
-To use a custom API client implementation:
+The `ClientInterface` is bound to `Model\Api\Client` via `etc/di.xml`:
 
 ```xml
-<!-- etc/di.xml -->
-<preference for="Innosend\Integration\Api\ClientInterface" type="Your\Module\Model\Api\CustomClient"/>
+<preference for="Innosend\Integration\Api\ClientInterface"
+            type="Innosend\Integration\Model\Api\Client"/>
 ```
 
-## Testing
+To swap the implementation in a custom module:
 
-### Healthcheck Test
+```xml
+<preference for="Innosend\Integration\Api\ClientInterface"
+            type="Your\Module\Model\Api\CustomClient"/>
+```
+
+## Data patch – config migration
+
+`Setup\Patch\Data\MigrateConfigPaths` runs on `bin/magento setup:upgrade` and:
+
+- Copies `innosend_api/configuration/pickup_points/api_token` → `innosend_api/configuration/api_token`
+- Deletes removed paths: `api_key`, `api_secret`, `allow_mutations`, `enable_pickup_points`
+
+## Error handling
+
+All errors from the API are caught and re-thrown as `LocalizedException`. Non-`LocalizedException` throwables are logged to `var/log/system.log` before being wrapped:
+
+```
+Innosend API Exception – {method} {url}: {message}
+Innosend API Error     – status {code}: {response body}
+```
+
+## Unit tests
+
+Run the module's own test suite from the Magento root:
 
 ```bash
-curl http://your-store.com/innosend/api/ping
-```
-
-Expected response:
-```json
-{
-    "status": "success",
-    "message": "API connection successful"
-}
+vendor/bin/phpunit package-source/innosend/magento2-integration/tests/Unit
+vendor/bin/phpunit package-source/innosend/magento2-integration/tests/Integration
 ```
 
 ## Requirements
 
 - Magento 2.4.x
-- PHP 7.3 - 8.3
+- PHP 8.1 – 8.3
 - cURL extension
-
-## Dependencies
-
-- Magento_Store
-- Magento_Config
+- `Magento_Store`, `Magento_Config`
