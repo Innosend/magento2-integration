@@ -58,7 +58,6 @@ class Carrier implements CarrierInterface
 
         try {
             // Try different endpoint variations
-            // WordPress plugin uses: https://api.innosend.eu/v1/pickup-point/courier/
             // Test shows v1/pickup-point/courier (without trailing slash) works best
             $endpoints = [
                 'v1/pickup-point/courier',      // Most common working endpoint
@@ -121,19 +120,19 @@ class Carrier implements CarrierInterface
 
                     // Priority 3: Direct array response (objects)
                     if (is_array($response) && !empty($response)) {
-                        
+
                         // Check if it's a list of carrier objects (has numeric keys with arrays)
                         if (isset($response[0]) && is_array($response[0])) {
                             $this->logger->info('Found carriers as indexed array: ' . count($response));
                             return $response;
                         }
-                        
+
                         // Check if it's a single carrier object
                         if (isset($response['code']) || isset($response['id']) || isset($response['name']) || isset($response['title'])) {
                             $this->logger->info('Found single carrier object');
                             return [$response];
                         }
-                        
+
                         // Check if response has string keys that might be carrier codes
                         $hasCarrierFields = false;
                         foreach ($response as $key => $value) {
@@ -142,7 +141,7 @@ class Carrier implements CarrierInterface
                                 break;
                             }
                         }
-                        
+
                         if ($hasCarrierFields) {
                             $this->logger->info('Found carriers as associative array: ' . count($response));
                             return array_values($response);
