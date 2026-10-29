@@ -58,7 +58,7 @@ class Carrier implements CarrierInterface
 
         try {
             $endpoints = [
-                'v1/pickup-point/courier',
+                'v1/pickup-point/courier/',
             ];
 
             $lastException = null;
