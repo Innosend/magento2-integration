@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and 
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- API client follows same-host redirects for GET requests instead of failing on a 301, and logs a clear error when a redirect cannot be followed.
+- Endpoint URLs configured with `http://` (or without scheme) for `*.innosend.eu` are upgraded to `https://`.
+- Carrier lookup calls only `v1/pickup-point/courier` instead of four endpoint variants.
+
 ## [1.1.0] – 2026-03-02
 
 ### Breaking changes

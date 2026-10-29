@@ -148,6 +148,28 @@ class ConfigTest extends TestCase
         $this->assertSame('https://api.innosend.eu', $this->config->getEndpointUrl());
     }
 
+    public function testGetEndpointUrlUpgradesHttpToHttps(): void
+    {
+        $this->scopeConfig->method('getValue')
+            ->willReturnMap([
+                [Config::XML_PATH_MODE, 'store', null, Mode::MODE_LIVE],
+                [Config::XML_PATH_LIVE_ENDPOINT, 'store', null, 'http://api.innosend.eu'],
+            ]);
+
+        $this->assertSame('https://api.innosend.eu', $this->config->getEndpointUrl());
+    }
+
+    public function testGetEndpointUrlAddsMissingScheme(): void
+    {
+        $this->scopeConfig->method('getValue')
+            ->willReturnMap([
+                [Config::XML_PATH_MODE, 'store', null, Mode::MODE_LIVE],
+                [Config::XML_PATH_LIVE_ENDPOINT, 'store', null, 'api.innosend.eu'],
+            ]);
+
+        $this->assertSame('https://api.innosend.eu', $this->config->getEndpointUrl());
+    }
+
     public function testGetEndpointUrlStripsTrailingSlash(): void
     {
         $this->scopeConfig->method('getValue')

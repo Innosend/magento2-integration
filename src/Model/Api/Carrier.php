@@ -57,19 +57,14 @@ class Carrier implements CarrierInterface
         }
 
         try {
-            // Try different endpoint variations
-            // Test shows v1/pickup-point/courier (without trailing slash) works best
             $endpoints = [
-                'v1/pickup-point/courier',      // Most common working endpoint
-                'pickup-point/courier',          // Fallback without version
-                'v1/pickup-point/courier/',     // With trailing slash
-                'pickup-point/courier/',         // With trailing slash, no version
+                'v1/pickup-point/courier',
             ];
 
             $lastException = null;
             foreach ($endpoints as $endpoint) {
                 try {
-                    $this->logger->info('Trying to fetch carriers from endpoint: ' . $endpoint);
+                    $this->logger->debug('Fetching carriers from endpoint: ' . $endpoint);
                     $response = $this->apiClient->get($endpoint);
 
                     $this->logger->debug('Carrier API response: ' . json_encode($response));
