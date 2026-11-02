@@ -282,6 +282,51 @@ class ClientTest extends TestCase
     }
 
     // -----------------------------------------------------------------------
+    // Redirects
+    // -----------------------------------------------------------------------
+
+    public function testGetFollowsSameHostRedirect(): void
+    {
+        $this->config->method('isValid')->willReturn(true);
+        $this->config->method('getEndpointUrl')->willReturn('https://api.innosend.eu');
+        $this->config->method('getOrganizationPath')->willReturn('');
+        $this->config->method('getApiToken')->willReturn('tok');
+        $this->config->method('getTimeout')->willReturn(30);
+
+        $requestedUrls = [];
+        $this->curl->method('get')->willReturnCallback(function (string $url) use (&$requestedUrls) {
+            $requestedUrls[] = $url;
+        });
+        $this->curl->method('getStatus')->willReturnOnConsecutiveCalls(301, 200);
+        $this->curl->method('getHeaders')->willReturn(['Location' => '/v1/pickup-point/courier/']);
+        $this->curl->method('getBody')->willReturn('["GLS"]');
+        $this->json->method('unserialize')->willReturn(['GLS']);
+
+        $this->assertSame(['GLS'], $this->client->get('pickup-point/courier'));
+        $this->assertSame([
+            'https://api.innosend.eu/v1/pickup-point/courier',
+            'https://api.innosend.eu/v1/pickup-point/courier/',
+        ], $requestedUrls);
+    }
+
+    public function testGetThrowsOnRedirectToOtherHost(): void
+    {
+        $this->config->method('isValid')->willReturn(true);
+        $this->config->method('getEndpointUrl')->willReturn('https://api.innosend.eu');
+        $this->config->method('getOrganizationPath')->willReturn('');
+        $this->config->method('getApiToken')->willReturn('tok');
+        $this->config->method('getTimeout')->willReturn(30);
+
+        $this->curl->expects($this->once())->method('get');
+        $this->curl->method('getStatus')->willReturn(301);
+        $this->curl->method('getHeaders')->willReturn(['Location' => 'https://example.com/']);
+        $this->curl->method('getBody')->willReturn('');
+
+        $this->expectException(LocalizedException::class);
+        $this->client->get('pickup-point/courier');
+    }
+
+    // -----------------------------------------------------------------------
     // Removed methods must not exist on Client
     // -----------------------------------------------------------------------
 

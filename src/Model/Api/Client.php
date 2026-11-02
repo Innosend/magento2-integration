@@ -50,6 +50,11 @@ class Client implements ClientInterface
     private $lastRequestUrl = null;
 
     /**
+     * Maximum number of redirects followed for a GET request
+     */
+    private const MAX_REDIRECTS = 3;
+
+    /**
      * @param Config $config
      * @param Curl $curl
      * @param Json $json
@@ -223,8 +228,47 @@ class Client implements ClientInterface
                     break;
             }
 
-            $responseBody = $this->curl->getBody();
             $statusCode = $this->curl->getStatus();
+
+            // Follow redirects (e.g. http -> https or a trailing slash) ourselves for GET requests:
+            // CURLOPT_FOLLOWLOCATION would make Magento's Curl client report the first (3xx) status
+            $redirects = 0;
+            while ($method === 'GET' && $statusCode >= 300 && $statusCode < 400 && $redirects < self::MAX_REDIRECTS) {
+                $location = $this->getRedirectLocation($url);
+                if ($location === null) {
+                    break;
+                }
+
+                $this->logger->debug('Innosend API redirect', [
+                    'url'      => $url,
+                    'status'   => $statusCode,
+                    'location' => $location,
+                ]);
+
+                $url = $location;
+                $this->lastRequestUrl = $url;
+                $this->curl->get($url);
+                $statusCode = $this->curl->getStatus();
+                $redirects++;
+            }
+
+            $responseBody = $this->curl->getBody();
+
+            if ($statusCode >= 300 && $statusCode < 400) {
+                $this->logger->error('Innosend API redirect not followed', [
+                    'method'   => $method,
+                    'url'      => $url,
+                    'status'   => $statusCode,
+                    'location' => $this->getLocationHeader(),
+                ]);
+                throw new LocalizedException(
+                    __(
+                        'Innosend API returned redirect %1 to "%2". Please check the API endpoint URL.',
+                        $statusCode,
+                        $this->getLocationHeader()
+                    )
+                );
+            }
 
             if ($statusCode >= 400) {
                 $this->logger->error('Innosend API Error', [
@@ -274,5 +318,45 @@ class Client implements ClientInterface
                 __('Error communicating with Innosend API: %1', $e->getMessage())
             );
         }
+    }
+
+    /**
+     * Get the Location header of the last response
+     *
+     * @return string
+     */
+    private function getLocationHeader(): string
+    {
+        $headers = $this->curl->getHeaders();
+
+        return trim((string) ($headers['Location'] ?? $headers['location'] ?? ''));
+    }
+
+    /**
+     * Resolve the redirect target of the last response, only on the same host so the Bearer token stays there
+     *
+     * @param string $currentUrl
+     * @return string|null
+     */
+    private function getRedirectLocation(string $currentUrl): ?string
+    {
+        $location = $this->getLocationHeader();
+        if ($location === '') {
+            return null;
+        }
+
+        $current = parse_url($currentUrl);
+        if (strpos($location, '/') === 0) {
+            $location = 'https://' . ($current['host'] ?? '') . $location;
+        }
+
+        $target = parse_url($location);
+        if (($target['scheme'] ?? '') !== 'https'
+            || strcasecmp((string) ($target['host'] ?? ''), (string) ($current['host'] ?? '')) !== 0
+        ) {
+            return null;
+        }
+
+        return $location;
     }
 }

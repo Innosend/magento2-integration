@@ -144,8 +144,18 @@ class Config
             $storeId
         );
 
+        $baseUrl = trim($baseUrl);
         if (empty($baseUrl)) {
             $baseUrl = 'https://api.innosend.eu';
+        }
+
+        // The Innosend API only serves https; http or a missing scheme causes a 301 on every call
+        if (strpos($baseUrl, '://') === false) {
+            $baseUrl = 'https://' . $baseUrl;
+        } elseif (stripos($baseUrl, 'http://') === 0
+            && preg_match('#^http://([a-z0-9-]+\.)*innosend\.eu(/|:|$)#i', $baseUrl)
+        ) {
+            $baseUrl = 'https://' . substr($baseUrl, 7);
         }
 
         return rtrim($baseUrl, '/');

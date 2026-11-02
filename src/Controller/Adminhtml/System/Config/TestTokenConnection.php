@@ -162,7 +162,7 @@ class TestTokenConnection extends Action implements HttpPostActionInterface
             }
 
             // Use the specific endpoint for API Token testing
-            $testEndpoints = [$testUrl . '/v1/pickup-point/courier'];
+            $testEndpoints = [$testUrl . '/v1/pickup-point/courier/'];
 
             $lastError = null;
             $lastHttpCode = 0;
